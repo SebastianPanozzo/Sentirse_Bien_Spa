@@ -10,9 +10,11 @@ exports.crearComentario = async (req, res) => {
 
     const nuevoComentario = await prisma.comentario.create({
       data: {
-        clienteId: parseInt(clienteId),
         contenido,
-        puntuacion: parseInt(puntuacion)
+        puntuacion: parseInt(puntuacion) || 0, // Add fallback for NaN
+        cliente: {
+          connect: { id: parseInt(clienteId) }
+        }
       }
     });
     
