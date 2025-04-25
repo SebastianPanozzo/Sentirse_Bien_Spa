@@ -1,52 +1,48 @@
 // server.js
 const express = require('express');
-const mongoose = require('mongoose');
 const cors = require('cors');
+const { PrismaClient } = require('@prisma/client');
 require('dotenv').config();
 
 const app = express();
 
-// Middlewares
-app.use(cors({ origin: process.env.FRONTEND_URL || 'http://localhost:5173' })); // Ajusta el origen desde una variable de entorno
+// Middleware
+app.use(cors());
 app.use(express.json());
 
 // Rutas
 const clientesRoutes = require('./routes/clientes');
 const reservasRoutes = require('./routes/reservas');
 const comentariosRoutes = require('./routes/comentarios');
-const contactoRoutes = require('./routes/contacto'); // Nueva ruta importada
+const contactoRoutes = require('./routes/contacto');
+const prisma = new PrismaClient();
 
+// Rutas
 app.use('/api/clientes', clientesRoutes);
 app.use('/api/reservas', reservasRoutes);
 app.use('/api/comentarios', comentariosRoutes);
-app.use('/api/contacto', contactoRoutes); // Nueva ruta agregada
+app.use('/api/contacto', contactoRoutes);
 
-// Middleware de manejo de errores global
-app.use((err, req, res, next) => {
-  console.error('❌ Error no manejado:', err);
-  res.status(500).json({ mensaje: 'Algo salió mal en el servidor' });
+// Ruta de prueba
+app.get('/', (req, res) => {
+  res.send('API funcionando correctamente');
 });
 
-// Conexión a MongoDB
-const mongoUri = process.env.MONGO_URI;
+
+// Manejo de errores global
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ mensaje: 'Error del servidor' });
+});
+
+// Puerto
 const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Servidor corriendo en puerto ${PORT}`);
+});
 
-if (!mongoUri) {
-  console.error('❌ MONGO_URI no está definida en el archivo .env');
-  process.exit(1);
-}
-
-mongoose.connect(mongoUri, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
-  .then(() => {
-    console.log('✅ Conectado a MongoDB');
-    app.listen(PORT, () => {
-      console.log(`🚀 Servidor corriendo en el puerto ${PORT}`);
-    });
-  })
-  .catch(err => {
-    console.error('❌ Error de conexión a MongoDB:', err);
-    process.exit(1);
-  });
+// Cierre limpio de Prisma
+process.on('SIGINT', async () => {
+  await prisma.$disconnect();
+  process.exit(0);
+});

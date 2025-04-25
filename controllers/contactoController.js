@@ -1,10 +1,21 @@
-const Contacto = require('../models/Contacto');
+// controllers/contactoController.js
+const { PrismaClient } = require('@prisma/client');
+const prisma = new PrismaClient();
 
 // Crear un nuevo mensaje de contacto
 exports.crearMensaje = async (req, res) => {
   try {
-    const nuevoMensaje = new Contacto(req.body);
-    await nuevoMensaje.save();
+    const { nombre, email, asunto, mensaje } = req.body;
+
+    const nuevoMensaje = await prisma.contacto.create({
+      data: {
+        nombre,
+        email,
+        asunto,
+        mensaje
+      }
+    });
+    
     res.status(201).json({ mensaje: 'Mensaje enviado correctamente' });
   } catch (error) {
     console.error('Error al guardar el mensaje de contacto:', error);
@@ -20,7 +31,12 @@ exports.obtenerMensajes = async (req, res) => {
       return res.status(403).json({ mensaje: 'Acceso denegado: solo administradores pueden ver mensajes de contacto.' });
     }
     
-    const mensajes = await Contacto.find().sort({ fecha: -1 });
+    const mensajes = await prisma.contacto.findMany({
+      orderBy: {
+        fecha: 'desc'
+      }
+    });
+    
     res.json(mensajes);
   } catch (error) {
     console.error('Error al obtener mensajes de contacto:', error);
@@ -31,14 +47,16 @@ exports.obtenerMensajes = async (req, res) => {
 // Eliminar un mensaje por ID (solo si el usuario es admin)
 exports.eliminarMensaje = async (req, res) => {
   try {
-    const mensajeId = req.params.id;
+    const mensajeId = parseInt(req.params.id);
 
     // Verificación de rol (solo admins pueden eliminar)
     if (req.usuario.rol !== 'admin') {
       return res.status(403).json({ mensaje: 'Acceso denegado: solo administradores pueden eliminar mensajes.' });
     }
 
-    const mensajeEliminado = await Contacto.findByIdAndDelete(mensajeId);
+    const mensajeEliminado = await prisma.contacto.delete({
+      where: { id: mensajeId }
+    });
 
     if (!mensajeEliminado) {
       return res.status(404).json({ mensaje: 'Mensaje no encontrado' });
