@@ -5,14 +5,15 @@ const prisma = new PrismaClient();
 // Crear un nuevo mensaje de contacto
 exports.crearMensaje = async (req, res) => {
   try {
-    const { nombre, email, asunto, mensaje } = req.body;
+    const { nombre, email, telefono, mensaje } = req.body;
 
     const nuevoMensaje = await prisma.contacto.create({
       data: {
         nombre,
         email,
-        asunto,
-        mensaje
+        asunto: "Consulta desde formulario de contacto", // Valor predeterminado para el campo asunto
+        mensaje,
+        // telefono no está en el modelo de Prisma, así que no lo incluimos
       }
     });
     
@@ -23,7 +24,7 @@ exports.crearMensaje = async (req, res) => {
   }
 };
 
-// Obtener todos los mensajes (solo para administradores)
+// Resto de funciones sin cambios
 exports.obtenerMensajes = async (req, res) => {
   try {
     // Verificar si el usuario es admin (debería validarse en el middleware)
@@ -44,7 +45,6 @@ exports.obtenerMensajes = async (req, res) => {
   }
 };
 
-// Eliminar un mensaje por ID (solo si el usuario es admin)
 exports.eliminarMensaje = async (req, res) => {
   try {
     const mensajeId = parseInt(req.params.id);
