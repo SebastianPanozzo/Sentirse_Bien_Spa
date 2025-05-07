@@ -8,7 +8,7 @@ CREATE TABLE "Cliente" (
     "telefono" TEXT NOT NULL,
     "email" TEXT NOT NULL,
     "fechaNacimiento" TIMESTAMP(3),
-    "rol" TEXT NOT NULL DEFAULT 'usuario',
+    "rol" TEXT NOT NULL DEFAULT 'admin',
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 

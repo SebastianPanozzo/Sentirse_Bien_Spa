@@ -16,7 +16,7 @@ model Cliente {
   telefono        String
   email           String    @unique
   fechaNacimiento DateTime?
-  rol             String    @default("usuario")
+  rol             String    @default("admin")
   reservas        Reserva[]
   comentarios     Comentario[]
   createdAt       DateTime  @default(now())
